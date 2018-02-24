@@ -9,33 +9,24 @@ exports.Collection = function(delimeter){
     return prospect.search(`^${delimeter}`) != -1;
   }
 
-  me.hasCommand = function(command){
-    if (typeof command == "string"){
-      return commands[command];
-    }
-
-    else if (command instanceof Command){
-      return commands[command.name()];
-    }
-
-    return false;
+  me.stripProspect = function(prospect){
+    return prospect.replace(new RegExp(`^${delimeter}`), "");
   }
 
-  me.addCommand = function(command){
-    if (command instanceof Command){
-      commands[command.name()] = command;
-    }
+  me.hasCommand = function(name){
+    return typeof commands[name] != "undefined";
   }
 
-  me.removeCommand = function(command){
-    if (typeof command == "string"){
-      delete commands[command];
-    }
+  me.getCommand = function(name){
+    return commands[name];
+  }
 
-    else if (command instanceof Command){
-      delete commands[command.name()];
-    }
+  me.addCommand = function(name, command){
+    commands[name] = command;
+  }
 
+  me.removeCommand = function(name){
+    delete commands[name];
   }
 
   me.delimeter = function(set){
