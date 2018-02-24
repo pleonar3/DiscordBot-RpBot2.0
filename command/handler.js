@@ -5,7 +5,6 @@ exports.Processor = function(){
   var me = this;
   
   var commandCollections = {};
-  var tokenizer;
   var parser;  
   var interpreter;
 
@@ -17,8 +16,7 @@ exports.Processor = function(){
 
       if (collection.prospectHasCommand(prospect)){
         var command = commands.stripProspect(prospect);
-        var tokens = tokenizer.tokenize(command);
-        var parsed = parser.parse(tokens);
+        var parsed = parser.parse(command);
         var output = interpreter.interpret(parsed, collection);
         return output;
       }
@@ -44,29 +42,20 @@ exports.Processor = function(){
     return commandCollections[name];
   }
 
-
-  me.commandTokenizer = function(set){
-    if (typeof set != "undefined"){
-      commandTokenizer = set;
-    }
-
-    return commandTokenizer;
-  } 
-
-  me.errorTokenizer = function(set){
-    if (typeof set != "undefined"){
-      errorTokenizer = set;
-    }
-
-    return errorTokenizer;
-  }
-
   me.parser = function(set){
     if (typeof set != "undefined"){
       parser = set;
     }
 
     return parser;
+  }
+
+  me.interpreter = function(set){
+    if (typeof set != "undefined"){
+      interpreter = set;
+    }
+
+    return interpreter;
   }
 
   return me; 

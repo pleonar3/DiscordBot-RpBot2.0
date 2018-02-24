@@ -15,8 +15,8 @@ Node
 = String/EmbeddedCommand/Word/Number/WhiteSpace
 
 String
-= [\"] charArray: DoubleCharArray [\"] {return {type: "double-string", value: charArray}} / 
-[\'] charArray: SingleCharArray [\'] {return {type: "single-string", value: charArray}}
+= [\"] charArray: DoubleCharArray [\"] {return {type: "string", value: charArray}} / 
+[\'] charArray: SingleCharArray [\'] {return {type: "string", value: charArray}}
 
 EmbeddedCommand
 = [\{] cmd: Command [\}] {return {type: "command", value: cmd}}
