@@ -1,7 +1,10 @@
 const Discord = require("discord.js");
 const Peg = require("pegjs");
-const CommandCollection = require("./command/collection.js").Collection;
+const Processor = require("./command/processor.js").Processor;
+const Interpreter = require("./command/interpreter.js").Interpreter;
 const fs = require('fs'); 
+
+const CollectionDefault = require("./command/collections/default.js").Default;
 
 const FILE_TOKEN = 'token';
 const FILE_TOKEN_ENCODING = 'utf8';
@@ -11,10 +14,14 @@ const FILE_PARSER_ENCODING = 'utf8';
 
 const COMMAND_DELIMETER = '!';
 
+const ERROR_COMMAND = "Command processing error: '<1>'";
+
 var token = fs.readFileSync(FILE_TOKEN, FILE_TOKEN_ENCODING);
 var client = new Discord.Client();
-var commands = new CommandCollection(COMMAND_DELIMETER);
 var parser = Peg.generate(fs.readFileSync(FILE_PARSER, FILE_PARSER_ENCODING));
+var processor = new Processor(parser, new Interpreter()); 
+
+processor.commandCollections[CollectionDefault.name] = CollectionDefault;
 
 token = token.replace("\n", "");
 
@@ -23,14 +30,27 @@ client.on('ready', () => {
 });
 
 client.on('message', msg => {
-  var prospect = msg.content;
-  
-  if (commands.prospectHasCommand(prospect)){
-    var command = commands.stripProspect(prospect);
-    var parsed = parser.parse(command);
-    msg.reply(JSON.stringify(parsed));
+  var commandString = msg.content;
+  var member = msg.member;
+  var reply = [];
+  if(!msg.author.bot){
+    var result = false;
+    try{
+      result = processor.process(member, commandString);
+      if(result){
+        for(var i = 0; i < result.length; ++i){
+          reply[i] = result[i].message;
+        }
+      }
+    }
+    catch (ex){
+      reply[0] = ERROR_COMMAND.format(ex.message);
+      result = true;
+    }
+
+    if(result)
+      msg.reply(reply.join("\r\n"));
   }
-  
 });
 
 client.login(token);

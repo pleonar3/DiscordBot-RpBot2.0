@@ -1,2 +1,2 @@
-require('mathextensions.js');
-require('stringextensions.js');
+require('./mathextensions.js');
+require('./stringextensions.js');

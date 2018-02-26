@@ -1,40 +1,86 @@
-var Command;
-
-exports.Collection = function(delimeter){
+exports.Collection = function(name="", delimeter="!", commands={}, permissions={}){
   var me = this;
-  var delimeter = delimeter;
-  var commands = {};  
 
-  me.prospectHasCommand = function(prospect){
-    return prospect.search(`^${delimeter}`) != -1;
+  me.name = name;
+  me.delimeter = delimeter; 
+  var commands = commands; 
+  var permissions = permissions; 
+  var trusted = {};
+
+  //commands
+  me.trustsCommand = function(name){    
+    if(me.ownsCommand(name)){
+      return true;
+    }
+
+    for (var name in trusted){
+      var collection = trusted[name];
+
+      if (collection.ownsCommand(name)){
+        return true;
+      }
+    }
+
+    return false;
   }
 
-  me.stripProspect = function(prospect){
-    return prospect.replace(new RegExp(`^${delimeter}`), "");
-  }
-
-  me.hasCommand = function(name){
+  me.ownsCommand = function(name){
     return typeof commands[name] != "undefined";
   }
 
-  me.getCommand = function(name){
-    return commands[name];
-  }
-
-  me.addCommand = function(name, command){
-    commands[name] = command;
+  me.addCommand = function(command, permission){
+    commands[command.name] = command;
+    permissions[command.name] = permission;
   }
 
   me.removeCommand = function(name){
     delete commands[name];
+    delete permissions[name];
   }
 
-  me.delimeter = function(set){
-    if (typeof set != "undefined"){
-      delimeter = set;
+  me.getCommand = function(name){
+    if (!me.ownsCommand(name)){
+      for (var name in trusted){
+        var collection = trusted[name];
+        
+        if (collection.ownsCommand(name)){
+          return collection.getCommand(name);
+        }
+      }
     }
+    return commands[name];
+  }
 
-    return delimeter;
+  me.getCommandPermission = function(name){
+    if (!me.ownsCommand(name)){
+      for (var name in trusted){
+        var collection = trusted[name];
+        
+        if (collection.ownsCommand(name)){
+          return collection.getCommandPermission(name);
+        }
+      }
+    }
+    
+    return permissions[name];
+  }
+
+  //trusting
+  me.trust = function(other){
+    trusted[other.name] = other;
+  }
+
+  me.untrust = function(name){
+    delete trusted[name];
+  }
+
+  //prospective command
+  me.prospectHasCommand = function(prospect){
+    return prospect.search(new RegExp(`^${me.delimeter}`)) != -1;
+  }
+
+  me.stripProspect = function(prospect){
+    return prospect.replace(new RegExp(`^${me.delimeter}`), "");
   }
 
   return me;
